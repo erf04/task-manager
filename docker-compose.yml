@@ -1,0 +1,35 @@
+services:
+  app:
+    container_name: nest
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+    env_file:
+      - .env.app
+  
+  db:
+    container_name: mysql
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    env_file:
+      - .env.db
+      # MYSQL_DATABASE: nest
+      # MYSQL_USER: nest
+      # MYSQL_PASSWORD: password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
