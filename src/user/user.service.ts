@@ -1,31 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { QueryBuilder, Repository, SelectQueryBuilder } from 'typeorm';
+import { QueryBuilder, Repository, SelectQueryBuilder, TypeORMError } from 'typeorm';
 import { UUID } from 'crypto';
+import { UserCreationDto, UserDto } from './dto/user.dto';
+import { BaseEntityService } from './../bases/base.service';
 
 @Injectable()
-export class UserService {
+export class UserService implements BaseEntityService<User>{
     queryBuilder:SelectQueryBuilder<User>
     constructor(
-        @InjectRepository(User) private userRepositoty:Repository<User>,
+        @InjectRepository(User) private userRepository:Repository<User>,
     ){  
-        this.queryBuilder = this.userRepositoty.createQueryBuilder('user');
+        this.queryBuilder = this.userRepository.createQueryBuilder('user');
     }
 
-    async getUserByUsername(username:string):Promise<User | null>{
+    async findByUsername(username:string):Promise<User | null>{
         return this.queryBuilder.where('user.username = :username', {username}).getOne();
     }
-    async getUserById(userId:UUID):Promise<User | null>{
-        return this.queryBuilder.where('user.id = :id', {id:userId}).getOne();
+
+
+    async save(user:UserCreationDto):Promise<any>{
+        return this.queryBuilder.insert().values(user).execute()
+        .then(res =>{ return user})
+        .catch((err:TypeORMError)=>{throw new HttpException(err.message,500)})
+        
+    }    
+
+    async findAll(): Promise<User[]> {
+        return this.userRepository.find();
     }
 
-    createUser(user:User):Promise<User>{
-        this.queryBuilder.insert().values(user).execute()
-        .then(res => console.log(res))
-        .catch(err=>console.log(err))
-        return this.queryBuilder.getOne();
-    }    
+    async findOne(id: number): Promise<User> {
+        return this.queryBuilder.where('user.userId = :id', {id}).getOne();
+    }
+
+    async delete(id: number): Promise<void> {
+        this.userRepository.delete(id).then(res=>console.log(res)).catch(err=>{throw Error(err)});
+    }
+
+
+
 
 
 

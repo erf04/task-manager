@@ -1,9 +1,11 @@
+import { Optional } from "@nestjs/common";
 import { UUID } from "crypto";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserDto } from "./dto/user.dto";
 
 
 @Entity()
-export class User{
+export class User extends BaseEntity{
     @PrimaryGeneratedColumn()
     userId:UUID
 
@@ -12,8 +14,17 @@ export class User{
     })
     username:string
     
-    @Column()
+    @Column({nullable:true})
+    
     firstName:string 
-    @Column()
+    @Column({nullable:true})
     lastName:string
+
+    @Column()
+    password:string 
+
+
+    toUserDto():UserDto{
+        return {userId:this.userId,username:this.username,firstName:this.firstName,lastName:this.lastName}
+    }
 }
