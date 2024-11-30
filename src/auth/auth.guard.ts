@@ -15,11 +15,9 @@ export class AuthGuard implements CanActivate {
     if (!accessToken) {
       throw new UnauthorizedException('Access token not found');
     }
-    const isValid = this.authService.verifyToken(accessToken);
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid access token');
-    }
-    
-    return true;
+    return await this.authService.verifyAccessToken(accessToken)
+    .then(payload=>{request.getUser = ()=> this.authService.getUserFromVerificationPayload(payload);return true})
+    .catch(err=>{throw new UnauthorizedException('Invalid access token');});
+
   }
 }

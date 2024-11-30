@@ -5,7 +5,7 @@ import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { rejects } from 'assert';
-import { JWT_SECRET } from './constants';
+import { JWT_ACCESS_LIFETIME, JWT_ACCESS_SECRET, JWT_REFRESH_LIFETIME, JWT_REFRESH_SECRET } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +27,14 @@ export class AuthService {
 
     }
 
-    async login(username:string,password:string):Promise<{accessToken:string}>{
+    async login(username:string,password:string):Promise<{accessToken:string,refreshToken:string}>{
         const user = await this.validateUser(username,password);
         if(user){
             const payload = {username:user.username,sub:user.userId};
-            return {accessToken:await this.jwtService.signAsync(payload)};
+            return {
+                accessToken:await this.jwtService.signAsync(payload,{secret:JWT_ACCESS_SECRET,expiresIn:JWT_ACCESS_LIFETIME}),
+                refreshToken:await this.jwtService.signAsync(payload,{secret:JWT_REFRESH_SECRET,expiresIn:JWT_REFRESH_LIFETIME})
+            };
         }else{
             return null;
         }
@@ -47,15 +50,36 @@ export class AuthService {
         return await this.userService.save(user);
     }
 
-    async verifyToken(accessToken:string):Promise<boolean>{
-        return this.jwtService.verifyAsync(accessToken)
-        .then(res=>true)
-        .catch(err=>false);
+    async verifyAccessToken(accessToken:string):Promise<any>{
+        return this.jwtService.verifyAsync(accessToken,{secret:JWT_ACCESS_SECRET})
+
+    }
+    async verifyRefreshToken(refreshToken:string):Promise<any>{
+        return this.jwtService.verifyAsync(refreshToken,{secret:JWT_REFRESH_SECRET})
+
     }
 
     async extractTokenFromHeader(header:string):Promise<string|null>{
         const [type,token] = header.split(' ');
         return type === 'Bearer' || 'JWT' ? token : null;
+    }
+
+    async generateNewAccessToken(refreshToken:string):Promise<{accessToken:string}>{
+        return this.verifyRefreshToken(refreshToken)
+        .then(async (result)=>{
+            const {iat,exp,...payload} = result;
+            return this.jwtService.signAsync(payload,{secret:JWT_ACCESS_SECRET,expiresIn:JWT_ACCESS_LIFETIME})
+            .then(accessToken=>({accessToken}))
+            // .catch(()=>null);
+        })
+        // .catch(err=>null)
+
+    }
+
+    async getUserFromVerificationPayload(payload:any):Promise<UserDto>{
+        const user = await this.userService.findOne(payload.sub);
+        if(user){ return user.toUserDto()}
+        return null;
     }
 
 
