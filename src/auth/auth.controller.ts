@@ -3,6 +3,10 @@ import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { UserCreationDto, UserDto } from 'src/user/dto/user.dto';
 import { AuthGuard } from './auth.guard';
+import { User } from 'src/user/user.decorator';
+import { Roles } from './roles/roles.decorator';
+import { Role } from './roles/role.enum';
+import { RolesGuard } from './roles/roles.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -48,10 +52,11 @@ export class AuthController {
 
     @Get('me')
     @Header('Content-Type', 'application/json')
-    @UseGuards(AuthGuard)
-    async getMe(@Request() req): Promise<UserDto> {
+    @UseGuards(AuthGuard,RolesGuard)
+    @Roles(Role.ADMIN)
+    async getMe(@User() user): Promise<UserDto> {
         // return await this.authService.getMe(accessToken);
-        return req.getUser();
+        return user;
     }
 
 }

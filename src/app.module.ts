@@ -5,6 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/roles/roles.guard';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   
@@ -39,9 +42,13 @@ import { AuthModule } from './auth/auth.module';
       })
     }),
     AuthModule,
+    ProjectsModule,
+  
     
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+  ],
 })
 export class AppModule {}

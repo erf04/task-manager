@@ -78,7 +78,10 @@ export class AuthService {
 
     async getUserFromVerificationPayload(payload:any):Promise<UserDto>{
         const user = await this.userService.findOne(payload.sub);
-        if(user){ return user.toUserDto()}
+        if(user){
+             return user.toUserDto()
+        }
+
         return null;
     }
 
