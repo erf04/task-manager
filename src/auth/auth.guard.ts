@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { CustomRequest } from './interfaces/request.interface';
 
-@Global()
+
 @Injectable()
 export class AuthGuard implements CanActivate {
 

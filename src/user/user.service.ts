@@ -40,6 +40,12 @@ export class UserService implements BaseEntityService<User>{
     }
 
 
+    async findMany(ids: number[]): Promise<User[]> {
+        return this.queryBuilder.where('user.userId IN (:...ids)', {ids}).getMany();
+        // this.userRepository.find({where:{userId:ids}});
+    }
+
+
 
 
 

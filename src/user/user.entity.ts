@@ -10,7 +10,7 @@ import { Project } from "src/projects/project.entity";
 @Entity()
 export class User extends BaseEntity{
     @PrimaryGeneratedColumn()
-    userId:UUID
+    userId:number
 
     @Column({
         unique:true

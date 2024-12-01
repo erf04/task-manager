@@ -4,7 +4,7 @@ import { Role } from "src/auth/roles/role.enum";
 
 export class UserDto{
     @Expose()
-    userId:string;
+    userId:number;
     @Expose()
     username:string;
     @Expose()
