@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryBuilder, SelectQueryBuilder } from 'typeorm';
 import { UUID } from 'crypto';
 import { UserService } from 'src/user/user.service';
-import { CreateProjectDto, ProjectDto } from './dto/project.dto';
+import { CreateProjectDto, ProjectDto, UpdateProjectDto } from './dto/project.dto';
 import { UserDto } from './../user/dto/user.dto';
 
 @Injectable()
@@ -51,8 +51,7 @@ export class ProjectsService{
     }
 
     async addMember(projectId:number,userId:number):Promise<ProjectDto>{
-        
-        const project = await this.projectRepository.findOne({
+        const project = await this.projectRepository.findOne({  
             where:{id:projectId},relations:['manager']
         });
         if (!project){
@@ -87,6 +86,14 @@ export class ProjectsService{
             }
         }
         return true;
+    }
+
+    async update(projectId:number,projectDto:UpdateProjectDto):Promise<ProjectDto>{
+        return this.queryBuilder.update(Project).set(projectDto).where('id = :id', {id:projectId}).execute()
+        .then(async(res)=>{
+            console.log(res);
+            return (await this.findOne(projectId)).toProjectDto();
+        }).catch(err=>{throw Error(err)});
     }
 
 

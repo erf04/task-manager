@@ -8,7 +8,7 @@ export class ProjectDto{
     @Expose()
     id: number;
     @Expose()
-    name: string;
+    title: string;
     @Expose()
     description: string;
     @Expose()
@@ -49,4 +49,20 @@ export class AddMemeberDto{
     @IsNotEmpty()
     @IsInt()
     userId: number;
+}
+
+
+export class UpdateProjectDto{
+    @Expose()
+    @IsOptional()
+    id: number;
+    @Expose()
+    @IsOptional()
+    title: string;
+    @Expose()
+    @IsOptional()
+    description: string;
+    @Expose()
+    @IsOptional()
+    status: ProjectStatus;
 }
