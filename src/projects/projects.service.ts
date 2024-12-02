@@ -91,7 +91,7 @@ export class ProjectsService{
     async update(projectId:number,projectDto:UpdateProjectDto):Promise<ProjectDto>{
         return this.queryBuilder.update(Project).set(projectDto).where('id = :id', {id:projectId}).execute()
         .then(async(res)=>{
-            console.log(res);
+        console.log(res)
             return (await this.findOne(projectId)).toProjectDto();
         }).catch(err=>{throw Error(err)});
     }
