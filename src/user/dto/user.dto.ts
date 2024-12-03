@@ -1,6 +1,7 @@
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 import { User } from "../user.entity";
 import { Role } from "src/auth/roles/role.enum";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class UserDto{
     @Expose()
@@ -21,4 +22,32 @@ export class UserCreationDto{
     lastName?:string 
     password:string
     
+}
+
+export class UserUpdateDto{
+    @Expose()
+    @IsString()
+    @IsNotEmpty()
+    username:string;
+
+    @Expose()
+    @IsString()
+    @IsOptional()
+    firstName?:string;
+
+    @Expose()
+    @IsString()
+    @IsOptional()
+    lastName?:string;
+
+    @Expose()
+    @IsNumber()
+    @IsNotEmpty()
+    userId:number
+
+    @Expose()
+    @IsString()
+    @IsOptional()
+    @IsEnum(Role)
+    roles:Role[]
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Param, Post, Put, UseGuards, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './project.entity';
 import { Roles } from 'src/auth/roles/roles.decorator';
@@ -12,21 +12,23 @@ import { ValidationPipe } from './validation.pipe';
 import { User } from 'src/user/user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { IsManagerGuard } from './projects.guard';
+import { TransformDtoInterceptor } from 'src/bases/transform-to-dto.interceptor';
 
 @UseGuards(AuthGuard,RolesGuard)
 @Controller('projects')
+@UseInterceptors(new TransformDtoInterceptor(ProjectDto))
 export class ProjectsController {
 constructor(private readonly projectsService: ProjectsService) {}
 
     @Post('members/add/')
     @Roles(Role.MANAGER,Role.ADMIN)
-    async addMember(@Body(new ValidationPipe()) body: AddMemeberDto): Promise<ProjectDto> {
+    async addMember(@Body(new ValidationPipe()) body: AddMemeberDto): Promise<Project> {
         return this.projectsService.addMember(body.projectId,body.userId);
     }
 
     @Post('create')
     @Roles(Role.MANAGER,Role.ADMIN)
-    async create(@Body(new ValidationPipe()) project: CreateProjectDto,@User() user:UserDto): Promise<ProjectDto> {
+    async create(@Body(new ValidationPipe()) project: CreateProjectDto,@User() user:UserDto): Promise<Project> {
         const isUnique=await this.projectsService.isUniqueProjectName(project.title,user)
         
         if (!isUnique){
@@ -41,7 +43,7 @@ constructor(private readonly projectsService: ProjectsService) {}
 
     @Post('members/remove/')
     @Roles(Role.MANAGER,Role.ADMIN)
-    async removeMember(@Body(new ValidationPipe()) body: AddMemeberDto): Promise<ProjectDto> {
+    async removeMember(@Body(new ValidationPipe()) body: AddMemeberDto): Promise<Project> {
         return this.projectsService.removeMember(body.projectId,body.userId);
     }
 
@@ -58,7 +60,14 @@ constructor(private readonly projectsService: ProjectsService) {}
     @Roles(Role.MANAGER,Role.ADMIN)
     @UseGuards(IsManagerGuard)
     @HttpCode(HttpStatus.PARTIAL_CONTENT)
-    async update(@Body(new ValidationPipe()) body: UpdateProjectDto,@Param('id') id: number):Promise<ProjectDto> {
+    async update(@Body(new ValidationPipe()) body: UpdateProjectDto,@Param('id') id: number):Promise<Project> {
         return this.projectsService.update(id,body);
     }
+
+    @Get('/:id')
+    @HttpCode(HttpStatus.OK)
+    async getOne(@Param('id') id: number): Promise<Project> {
+        return this.projectsService.findOne(id);
+    }
+
 }

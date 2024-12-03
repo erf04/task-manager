@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Role } from 'src/auth/roles/role.enum';
 import { Roles } from 'src/auth/roles/roles.decorator';
@@ -8,12 +8,14 @@ import { Task } from './task.entity';
 import { CreateTaskDto, TaskDto, UpdateTaskDto } from './dto/task.dto';
 import { IsManagerGuard } from 'src/projects/projects.guard';
 import { IsManagerTaskGuard } from './is-manager.guard';
+import { TransformDtoInterceptor } from '../bases/transform-to-dto.interceptor';
 
 @Controller('tasks')
 @UseGuards(AuthGuard,RolesGuard)
+@UseInterceptors(new TransformDtoInterceptor(TaskDto))
 export class TaskController {
-
-    constructor (private taskService:TaskService){}
+    constructor (private taskService:TaskService){
+    }
 
 
     @Get('project/:projectId')
@@ -28,8 +30,8 @@ export class TaskController {
     @UseGuards(IsManagerTaskGuard)
     @HttpCode(HttpStatus.CREATED) 
     @Roles(Role.MANAGER,Role.ADMIN)
-    async create(@Body(new ValidationPipe()) task:CreateTaskDto):Promise<TaskDto>{
-        return this.taskService.create(task);
+    async create(@Body(new ValidationPipe()) task:CreateTaskDto):Promise<Task>{
+        return this.taskService.save(task);
     }
 
     @Post('delete/:id')
@@ -48,7 +50,7 @@ export class TaskController {
 
     @Get('/:id')
     @HttpCode(HttpStatus.OK)
-    async getTask(@Param('id') id: number): Promise<TaskDto> {
+    async getTask(@Param('id') id: number): Promise<Task> {
         return this.taskService.findOne(id);    
     }
 

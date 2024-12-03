@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { QueryBuilder, Repository, SelectQueryBuilder, TypeORMError } from 'typeorm';
 import { UUID } from 'crypto';
-import { UserCreationDto, UserDto } from './dto/user.dto';
-import { BaseEntityService } from './../bases/base.service';
+import { UserCreationDto, UserDto, UserUpdateDto } from './dto/user.dto';
+import { IBaseEntityService } from './../bases/base.service';
 
 @Injectable()
-export class UserService implements BaseEntityService<User>{
+export class UserService implements IBaseEntityService<User>{
     queryBuilder:SelectQueryBuilder<User>
     constructor(
         @InjectRepository(User) private userRepository:Repository<User>,
@@ -43,6 +43,15 @@ export class UserService implements BaseEntityService<User>{
     async findMany(ids: number[]): Promise<User[]> {
         return this.queryBuilder.where('user.userId IN (:...ids)', {ids}).getMany();
         // this.userRepository.find({where:{userId:ids}});
+    }
+
+    async update(id: number, entity: UserUpdateDto): Promise<User> {
+        return this.queryBuilder.update(User).set(entity).where('user.userId = :id', {id}).execute()
+        .then(()=>this.findOne(id)).catch((err:TypeORMError)=>{throw new HttpException(err.message,500)});
+    }
+
+    async toDto(entity: User): Promise<any> {
+        return entity.toUserDto();
     }
 
 

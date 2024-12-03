@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { BaseEntityService } from './../bases/base.service';
+import { IBaseEntityService } from './../bases/base.service';
 import { Project } from './project.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryBuilder, SelectQueryBuilder } from 'typeorm';
@@ -9,7 +9,7 @@ import { CreateProjectDto, ProjectDto, UpdateProjectDto } from './dto/project.dt
 import { UserDto } from './../user/dto/user.dto';
 
 @Injectable()
-export class ProjectsService{
+export class ProjectsService implements IBaseEntityService<Project> {
 
     queryBuilder:SelectQueryBuilder<Project>;
     constructor(
@@ -32,7 +32,7 @@ export class ProjectsService{
 
     }
 
-    async save(projectDto: CreateProjectDto): Promise<ProjectDto> {
+    async save(projectDto: CreateProjectDto): Promise<Project> {
         const { managerId,participantIds } = projectDto;
         const manager = await this.userService.findOne(managerId);
         const participants = participantIds && participantIds.length > 0 ? await this.userService.findMany(participantIds):[];
@@ -43,14 +43,14 @@ export class ProjectsService{
             manager,
             participants
         });
-        return (await this.projectRepository.save(project)).toProjectDto();
+        return (await this.projectRepository.save(project));
     }
 
     async delete(id: number): Promise<void> {
         this.projectRepository.delete(id).then(res=>console.log(res)).catch(err=>{throw Error(err)});
     }
 
-    async addMember(projectId:number,userId:number):Promise<ProjectDto>{
+    async addMember(projectId:number,userId:number):Promise<Project>{
         const project = await this.projectRepository.findOne({  
             where:{id:projectId},relations:['manager']
         });
@@ -62,15 +62,15 @@ export class ProjectsService{
         }
         const user=await this.userService.findOne(userId);
         project.participants? project.participants.push(user):project.participants=[user];
-        return (await this.projectRepository.save(project)).toProjectDto();
+        return this.projectRepository.save(project);
 
     }
 
-    async removeMember(projectId:number,userId:number):Promise<ProjectDto>{
+    async removeMember(projectId:number,userId:number):Promise<Project>{
         const project = await this.findOne(projectId);
         
         project.participants = project.participants.filter(user=>user.userId!==userId);
-        return (await this.projectRepository.save(project)).toProjectDto();
+        return this.projectRepository.save(project);
     }
 
     async isUniqueProjectName(projectName:string,user:UserDto):Promise<boolean>{
@@ -88,12 +88,16 @@ export class ProjectsService{
         return true;
     }
 
-    async update(projectId:number,projectDto:UpdateProjectDto):Promise<ProjectDto>{
+    async update(projectId:number,projectDto:UpdateProjectDto):Promise<Project>{
         return this.queryBuilder.update(Project).set(projectDto).where('id = :id', {id:projectId}).execute()
         .then(async(res)=>{
         console.log(res)
-            return (await this.findOne(projectId)).toProjectDto();
+            return (await this.findOne(projectId));
         }).catch(err=>{throw Error(err)});
+    }
+
+    async toDto(entity: Project): Promise<any> {
+        return entity.toProjectDto();
     }
 
 

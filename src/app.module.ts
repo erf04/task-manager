@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles/roles.guard';
 import { ProjectsModule } from './projects/projects.module';
 import { TaskModule } from './task/task.module';
+import { AssignModule } from './assign/assign.module';
 
 @Module({
   
@@ -45,6 +46,7 @@ import { TaskModule } from './task/task.module';
     AuthModule,
     ProjectsModule,
     TaskModule,
+    AssignModule,
   
     
   ],

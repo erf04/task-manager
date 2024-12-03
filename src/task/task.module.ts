@@ -13,6 +13,7 @@ import { ProjectsModule } from 'src/projects/projects.module';
     ProjectsModule
   ],
   controllers: [TaskController],
-  providers: [TaskService]
+  providers: [TaskService],
+  exports:[TaskService]
 })
 export class TaskModule {}

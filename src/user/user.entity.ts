@@ -5,6 +5,7 @@ import { UserDto } from "./dto/user.dto";
 import { plainToInstance } from "class-transformer";
 import { Role } from "src/auth/roles/role.enum";
 import { Project } from "src/projects/project.entity";
+import { Assign } from "src/assign/assign.entity";
 
 
 @Entity()
@@ -34,6 +35,9 @@ export class User extends BaseEntity{
 
     @ManyToMany(()=>Project,project=>project.participants)
     projectsAsParticipant:Project[]
+
+    @OneToMany(()=>Assign,assign=>assign.user)
+    assignedTasks:Assign[]
 
     
 
