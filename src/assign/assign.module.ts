@@ -16,7 +16,7 @@ import { IsProjectManagerConstraint } from './validation/is-project-manager';
     AuthModule
 
   ],
-  providers: [AssignService,IsProjectManagerConstraint],
+  providers: [AssignService],
   controllers: [AssignController],
   exports:[AssignService],
   

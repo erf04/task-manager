@@ -1,6 +1,7 @@
+import { TaskStatus } from "src/task/task-status.enum";
 import { Task } from "src/task/task.entity";
 import { User } from "src/user/user.entity";
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { AfterInsert, BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity()
@@ -19,5 +20,10 @@ export class Assign extends BaseEntity{
 
     @Column({nullable:true})
     description:string
+
+    @AfterInsert()
+    updateTaskStatus(){
+        this.task.status = TaskStatus.IN_PROGRESS;
+    }
  
 }

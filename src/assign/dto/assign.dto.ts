@@ -33,7 +33,7 @@ export class AssignDto{
 export class CreateAssignDto{
     @Expose()
     @IsNumber()
-    @Validate(IsProjectManagerConstraint, { message: 'You are not the manager of the project containing this task' })
+    // @Validate(IsProjectManagerConstraint, { message: 'You are not the manager of the project containing this task' })
     taskId:number
 
     @Expose()

@@ -55,7 +55,20 @@ export class AssignService implements IBaseEntityService<Assign>{
     }
 
     async update(id: number, entityDto: UpdateAssignDto): Promise<Assign> {
-        return this.assignRepository.createQueryBuilder().update(Assign).set(entityDto).where("id = :id",{id}).execute()
+        const user=await this.userService.findOne(entityDto.userId);
+        const task=await this.taskService.findOne(entityDto.taskId);
+        if (!user) {
+            throw new HttpException('User not found', 404);
+        }
+        if (!task) {
+            throw new HttpException('Task not found', 404);
+        }
+        const entity = {
+            description : entityDto.description,
+            user,
+            task
+        }
+        return this.assignRepository.createQueryBuilder().update(Assign).set(entity).where("id = :id",{id}).execute()
         .then(res=>this.findOne(id)).catch(err=>{throw Error(err)});
     }
 
