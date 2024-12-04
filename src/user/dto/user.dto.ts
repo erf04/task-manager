@@ -2,6 +2,8 @@ import { Expose, Type } from "class-transformer";
 import { User } from "../user.entity";
 import { Role } from "src/auth/roles/role.enum";
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Project } from "src/projects/project.entity";
+import { ProjectDto } from "src/projects/dto/project.dto";
 
 export class UserDto{
     @Expose()
@@ -14,6 +16,14 @@ export class UserDto{
     lastName?:string;
     @Expose()
     roles:Role[]
+    @Expose()
+    @Type(()=>ProjectDto)
+    projectsAsManager:ProjectDto[];
+
+    @Expose()
+    @Type(()=>ProjectDto)
+    projectsAsParticipant:ProjectDto[]
+
 }
 
 export class UserCreationDto{ 

@@ -32,7 +32,7 @@ export class UserService implements IBaseEntityService<User>{
     }
 
     async findOne(id: number): Promise<User> {
-        return this.queryBuilder.where('user.userId = :id', {id}).getOne();
+        return this.userRepository.findOne({where:{userId:id},relations:['projectsAsManager','projectsAsParticipant']});
     }
 
     async delete(id: number): Promise<void> {

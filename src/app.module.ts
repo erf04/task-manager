@@ -10,6 +10,8 @@ import { RolesGuard } from './auth/roles/roles.guard';
 import { ProjectsModule } from './projects/projects.module';
 import { TaskModule } from './task/task.module';
 import { AssignModule } from './assign/assign.module';
+import { EventGateway } from './event/event.gateway';
+import { EventModule } from './event/event.module';
 
 @Module({
   
@@ -47,12 +49,14 @@ import { AssignModule } from './assign/assign.module';
     ProjectsModule,
     TaskModule,
     AssignModule,
+    EventModule,
   
     
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    EventGateway,
   ],
 })
 export class AppModule {}

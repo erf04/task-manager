@@ -8,13 +8,15 @@ import { TaskService } from 'src/task/task.service';
 import { UserService } from 'src/user/user.service';
 import { plainToInstance } from 'class-transformer';
 import { UserDto } from 'src/user/dto/user.dto';
+import { EventGateway } from './../event/event.gateway';
 
 @Injectable()
 export class AssignService implements IBaseEntityService<Assign>{
     constructor(
         @InjectRepository(Assign) private readonly assignRepository:Repository<Assign>,
         private readonly taskService:TaskService,
-        private readonly userService:UserService
+        private readonly userService:UserService,
+        private readonly eventGateway:EventGateway
     ){
     }
 
@@ -41,7 +43,12 @@ export class AssignService implements IBaseEntityService<Assign>{
             throw new HttpException('User not found', 404);  
         }
         const assign = this.assignRepository.create({task,user});
-        return this.assignRepository.save(assign);
+        return this.assignRepository.save(assign)
+        .then(async(res)=>{
+            const assign= await this.findOne(res.id);
+            this.eventGateway.sendAssignmentNotification(await this.toDto(assign));
+            return assign
+        }).catch(err=>{throw Error(err)});
     }
 
     async delete(id: number): Promise<void> {
