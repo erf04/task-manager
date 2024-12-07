@@ -6,6 +6,7 @@ import { plainToInstance } from "class-transformer";
 import { Role } from "src/auth/roles/role.enum";
 import { Project } from "src/projects/project.entity";
 import { Assign } from "src/assign/assign.entity";
+import { EventNotif } from "src/notification/notification.entity";
 
 
 @Entity()
@@ -38,6 +39,9 @@ export class User extends BaseEntity{
 
     @OneToMany(()=>Assign,assign=>assign.user)
     assignedTasks:Assign[]
+
+    @OneToMany(()=>EventNotif,notif=>notif.receiver,{onDelete:'CASCADE',onUpdate:'CASCADE'})
+    eventNotifs:EventNotif[]
 
     
 

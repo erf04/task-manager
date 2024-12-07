@@ -12,6 +12,7 @@ import { TaskModule } from './task/task.module';
 import { AssignModule } from './assign/assign.module';
 import { EventGateway } from './event/event.gateway';
 import { EventModule } from './event/event.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   
@@ -50,6 +51,7 @@ import { EventModule } from './event/event.module';
     TaskModule,
     AssignModule,
     EventModule,
+    NotificationModule,
   
     
   ],

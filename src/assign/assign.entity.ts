@@ -1,7 +1,8 @@
+import { EventNotif } from "src/notification/notification.entity";
 import { TaskStatus } from "src/task/task-status.enum";
 import { Task } from "src/task/task.entity";
 import { User } from "src/user/user.entity";
-import { AfterInsert, AfterUpdate, BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { AfterInsert, AfterUpdate, BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity()
@@ -20,6 +21,9 @@ export class Assign extends BaseEntity{
 
     @Column({nullable:true})
     description:string
+
+    @OneToMany(()=>EventNotif,eventNotif=>eventNotif.assign,{onDelete:'CASCADE',onUpdate:'CASCADE'})
+    eventNotifs:EventNotif[]
 
     @AfterInsert()
     updateTaskStatus(){

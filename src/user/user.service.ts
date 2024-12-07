@@ -32,7 +32,8 @@ export class UserService implements IBaseEntityService<User>{
     }
 
     async findOne(id: number): Promise<User> {
-        return this.userRepository.findOne({where:{userId:id},relations:['projectsAsManager','projectsAsParticipant']});
+        return this.userRepository.findOne({where:{userId:id},
+            relations:['projectsAsManager','projectsAsParticipant','assignedTasks','eventNotifs']});
     }
 
     async delete(id: number): Promise<void> {
