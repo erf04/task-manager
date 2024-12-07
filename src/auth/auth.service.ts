@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { rejects } from 'assert';
 import { JWT_ACCESS_LIFETIME, JWT_ACCESS_SECRET, JWT_REFRESH_LIFETIME, JWT_REFRESH_SECRET } from './constants';
+import { TypeORMError } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -45,9 +46,11 @@ export class AuthService {
         return bcrypt.hash(password, 10);
     }
 
-    async signUp(user:UserCreationDto){
+    async signUp(user:UserCreationDto):Promise<UserDto>{
         user.password = await this.hashPassword(user.password);
-        return await this.userService.save(user);
+        return this.userService.save(user)
+        .then(res=>this.userService.findOne(res.userId).then(user=>user.toUserDto()))
+        .catch((err:TypeORMError)=>{throw new HttpException(err.message,500)});
     }
 
     async verifyAccessToken(accessToken:string):Promise<any>{

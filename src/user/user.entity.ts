@@ -29,7 +29,7 @@ export class User extends BaseEntity{
     password:string 
 
     @Column({type:'simple-array'})
-    roles:Role[]
+    roles:Role[] = [Role.USER]
 
     @OneToMany(()=>Project,project=>project.manager)
     projectsAsManager:Project[]

@@ -10,15 +10,14 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateEventNotifDto {
     @IsNotEmpty()
-    @Type(()=>UserDto)
-    receiver: UserDto;
+    receiverId: number;
     @IsEnum(EventType)
     @IsNotEmpty()
     type: EventType;
 
-    @Type(()=>AssignDto)
+
     @IsNotEmpty()
-    assign: Assign;
+    assignId:number;
 
 }
 

@@ -6,13 +6,15 @@ import { AssignDto } from 'src/assign/dto/assign.dto';
 import { EventGateway } from './event.gateway';
 import { User } from 'src/user/user.entity';
 import { EventType } from './constants';
+import { NotificationService } from 'src/notification/notification.service';
+
 
 @Injectable()
 export class EventService {
 
   constructor(
     private readonly userService:UserService,
-
+    private readonly notificationService:NotificationService
   ) {}
 
 
@@ -26,9 +28,36 @@ export class EventService {
     // send notification to assigned user, manager and users from the project
     const assignedUserId = assign.user.userId;
     const assignProjectId = assign.task.project.id;
+    this.saveNotifications(EventType.GOT_ASSIGNMENT,EventType.ASSIGN_TO_A_MEMBER,EventType.ASSIGN_TASK,assign);
     server.to(`user_${assignedUserId}`).emit(EventType.GOT_ASSIGNMENT,assign);
     server.to(`project_${assignProjectId}`).emit(EventType.ASSIGN_TO_A_MEMBER,assign);
     server.to(`manager_of_${assignProjectId}`).emit(EventType.ASSIGN_TASK,assign);
+    
+
+
+  }
+
+  private async saveNotifications(assigneeType:EventType,membersType:EventType,managerType:EventType,assign:AssignDto){
+    const assigneeNotifDto = {
+      type:assigneeType,
+      receiverId:assign.user.userId,
+      assignId:assign.id
+    }
+    this.notificationService.save(assigneeNotifDto);
+    assign.task.project.participants.forEach(participant => {
+      let participantsNotifDto = {
+        type:membersType,
+        receiverId:participant.userId,
+        assignId:assign.id
+      }
+      this.notificationService.save(participantsNotifDto);
+    })
+    const managerNotifDto = {
+      type:managerType,
+      receiverId:assign.task.project.manager.userId,
+      assignId:assign.id
+    }
+    this.notificationService.save(managerNotifDto);
   }
 
   async sendUpdateTaskNotification(server:Server,assign:AssignDto){

@@ -21,7 +21,7 @@ export class NotificationService {
     }
 
     async save(eventNotifDto:CreateEventNotifDto):Promise<EventNotif>{
-        const eventNotif = this.eventNotifRepository.create({receiver:{userId:eventNotifDto.receiver.userId},type:eventNotifDto.type,assign:{id:eventNotifDto.assign.id}});
+        const eventNotif = this.eventNotifRepository.create({receiver:{userId:eventNotifDto.receiverId},type:eventNotifDto.type,assign:{id:eventNotifDto.assignId}});
         return this.eventNotifRepository.save(eventNotif)
         .then((res:EventNotif)=>this.findOne(res.id))
         .catch((err:TypeORMError)=>{throw new HttpException(err.message,500)});

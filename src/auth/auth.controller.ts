@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Headers, HttpException, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Headers, HttpCode, HttpException, Logger, Post, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { UserCreationDto, UserDto } from 'src/user/dto/user.dto';
@@ -7,22 +7,36 @@ import { User } from 'src/user/user.decorator';
 import { Roles } from './roles/roles.decorator';
 import { Role } from './roles/role.enum';
 import { RolesGuard } from './roles/roles.guard';
+import { ApiBearerAuth, ApiBody, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ValidationPipe } from 'src/projects/validation.pipe';
+import { LoginDto, LoginResponseDto } from './dto/auth.dto';
+import { stringify } from 'querystring';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
+    private readonly logger = new Logger(AuthController.name);
     constructor(
         private readonly authService: AuthService,
     ) {}
 
     @Post('login')
-    async login(@Body("username") username: string, @Body("password") password: string): Promise<{accessToken:string} | any> {
-        const accessToken = await this.authService.login(username,password)
-        return accessToken?accessToken:new HttpException('Invalid credentials', 401);
+    @ApiResponse({ status: 200, description: 'Returns access and refresh tokens',type:()=>(LoginResponseDto) })
+    @ApiResponse({ status: 401, description: 'Invalid credentials' })
+    async login(@Body(new ValidationPipe()) loginDto:LoginDto,@Res() res:Response): Promise<LoginResponseDto | any> {
+        const accessToken = await this.authService.login(loginDto.username,loginDto.password)
+        if (accessToken){
+            this.logger.debug(`user ${loginDto.username} logged in`);
+            return res.status(200).json(accessToken);
+        }
+        return res.status(401).json({message:"Invalid credentials"});   
 
     }
 
     @Post('signup')
-    async signup(@Body() user:UserCreationDto) {
+    @ApiResponse({ status: 200, description: 'Returns user object',type:()=>(UserDto) })
+    @ApiResponse({ status: 400, description: 'bad request' })
+    async signup(@Body() user:UserCreationDto):Promise<UserDto> {
         return await this.authService.signUp(user);
     }
 
@@ -54,6 +68,7 @@ export class AuthController {
     @Header('Content-Type', 'application/json')
     @UseGuards(AuthGuard,RolesGuard)
     @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     async getMe(@User() user): Promise<UserDto> {
         // return await this.authService.getMe(accessToken);
         return user;
