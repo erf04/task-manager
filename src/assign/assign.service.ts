@@ -70,13 +70,29 @@ export class AssignService implements IBaseEntityService<Assign>{
         if (!task) {
             throw new HttpException('Task not found', 404);
         }
+        const oldObj= this.findOne(id);
+        const isAssignmentNotificationNeeded=await this.checkForAssignmentNotification(oldObj,entityDto);
         const entity = {
             description : entityDto.description,
             user,
             task
         }
         return this.assignRepository.createQueryBuilder().update(Assign).set(entity).where("id = :id",{id}).execute()
-        .then(res=>this.findOne(id)).catch(err=>{throw Error(err)});
+        .then(async()=>{
+            const assign = await this.findOne(id);
+            if(isAssignmentNotificationNeeded)
+                this.eventGateway.sendAssignmentNotification(await this.toDto(assign));
+            else
+                this.eventGateway.sendUpdateAssignmentNotification(await this.toDto(assign));
+            return assign
+        }).catch(err=>{throw Error(err)});
+    }
+
+    private async checkForAssignmentNotification(oldObj:Promise<Assign>,payload:UpdateAssignDto):Promise<boolean>{
+        return oldObj.then((res)=>
+            res.user.userId!==payload.userId
+        ).catch(err=>{throw Error(err)});
+
     }
 
     async findAllByUser(user:UserDto):Promise<Assign[]>{

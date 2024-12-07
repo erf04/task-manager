@@ -14,7 +14,10 @@ import { TaskService } from 'src/task/task.service';
 @UseInterceptors(new TransformDtoInterceptor(AssignDto))
 @UseGuards(AuthGuard,RolesGuard)
 export class AssignController {
-    constructor(private readonly assignService: AssignService,private readonly taskService:TaskService) {}
+    constructor(
+        private readonly assignService: AssignService,
+        private readonly taskService:TaskService,
+    ) {}
 
     @Post('')
     async assign(@Body(new ValidationPipe()) body:CreateAssignDto,@User() user:UserDto) : Promise<Assign>{
@@ -26,6 +29,7 @@ export class AssignController {
         throw new HttpException('You are not the task manager',403);
 
     }
+
 
     @Put('/update/:id')
     @UseGuards(IsTaskManagerGuard)
