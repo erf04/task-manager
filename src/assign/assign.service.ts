@@ -23,7 +23,7 @@ export class AssignService implements IBaseEntityService<Assign>{
     async findOne(id: number): Promise<Assign> {
         return this.assignRepository.findOne({
             where:{id},
-            relations:['user','task','task.project','task.project.manager']
+            relations:['user','task','task.project','task.project.manager','task.project.participants']
         });
     }
 

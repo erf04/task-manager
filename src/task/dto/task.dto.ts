@@ -36,8 +36,6 @@ export class UpdateTaskDto{
     @Expose()
     status: TaskStatus;
 
-
-
 }
 
 export class CreateTaskDto{

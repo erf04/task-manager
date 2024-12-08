@@ -4,20 +4,24 @@ import { EventNotif } from './notification.entity';
 import { Repository, TypeORMError } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { UserDto } from 'src/user/dto/user.dto';
-import { CreateEventNotifDto } from './dto/event-notif.dto';
+import { CreateEventNotifDto, EventNotifDto } from './dto/event-notif.dto';
 
 @Injectable()
 export class NotificationService {
 
     constructor(@InjectRepository(EventNotif) private readonly eventNotifRepository:Repository<EventNotif>){}
 
-    async findAllByUser(user:UserDto):Promise<EventNotif[]>{
-        return this.eventNotifRepository.find({
+    async findAllByUser(user:UserDto):Promise<EventNotifDto[]>{
+        const events = await this.eventNotifRepository.find({
             where:{
                 receiver:{userId:user.userId}
             },
+            relations:['assign','assign.user','assign.task','assign.task.project','assign.task.project.manager'],
             order:{date:'DESC'}
         });
+        console.log(events);
+        return events;
+        
     }
 
     async save(eventNotifDto:CreateEventNotifDto):Promise<EventNotif>{
@@ -30,4 +34,11 @@ export class NotificationService {
     async findOne(id:number):Promise<EventNotif>{
         return this.eventNotifRepository.findOne({where:{id}});
     }
+
+    async read(id:number):Promise<EventNotif>{
+        const eventNotif = await this.findOne(id);
+        eventNotif.read=true;
+        return this.eventNotifRepository.save(eventNotif);
+    }
+
 }
